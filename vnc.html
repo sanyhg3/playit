@@ -94,6 +94,9 @@
 
         // See docs/EMBEDDING.md for a list of possible settings.
 
+        defaults['resize'] = 'scale';
+        defaults['view_clip'] = true;
+
         UI.start({ settings: { defaults: defaults,
                                mandatory: mandatory } });
     </script>
@@ -423,37 +426,30 @@ style="position:absolute;opacity:0;height:0;width:0;">
     </audio>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const input = document.getElementById("mobileInput");
+    const hiddenInput = document.getElementById("mobileInput");
+    const vncInput = document.getElementById("noVNC_keyboardinput");
 
-    // Focus input when user taps screen
+    // Focus hidden input when user taps screen
     document.addEventListener("click", () => {
-        input.focus();
+        hiddenInput.focus();
     });
 
-    // Wait until RFB is ready
-    const checkRfb = setInterval(() => {
-        if (window.rfb) {
-            clearInterval(checkRfb);
+    // Forward typed characters to noVNC input
+    hiddenInput.addEventListener("input", (e) => {
+        vncInput.value += e.target.value;
+        vncInput.dispatchEvent(new Event("input"));
 
-            // Send typed characters
-            input.addEventListener("input", (e) => {
-                const val = e.target.value;
+        e.target.value = "";
+    });
 
-                for (let char of val) {
-                    window.rfb.sendKey(char.charCodeAt(0));
-                }
-
-                e.target.value = "";
-            });
-
-            // Handle backspace
-            input.addEventListener("keydown", (e) => {
-                if (e.key === "Backspace") {
-                    window.rfb.sendKey(0xff08);
-                }
-            });
+    // Handle backspace
+    hiddenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace") {
+            vncInput.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "Backspace" })
+            );
         }
-    }, 100);
+    });
 });
 </script>
  </body>
