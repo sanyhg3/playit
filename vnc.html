@@ -94,12 +94,17 @@
 
         // See docs/EMBEDDING.md for a list of possible settings.
 
+        defaults['resize'] = 'scale';
+        defaults['view_clip'] = true;
+
         UI.start({ settings: { defaults: defaults,
                                mandatory: mandatory } });
     </script>
 </head>
 
 <body>
+<input id="mobileInput" type="text"
+style="position:absolute;opacity:0;height:0;width:0;">
 
     <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
@@ -419,5 +424,33 @@
         <source src="app/sounds/bell.oga" type="audio/ogg">
         <source src="app/sounds/bell.mp3" type="audio/mpeg">
     </audio>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const hiddenInput = document.getElementById("mobileInput");
+    const vncInput = document.getElementById("noVNC_keyboardinput");
+
+    // Focus hidden input when user taps screen
+    document.addEventListener("click", () => {
+        hiddenInput.focus();
+    });
+
+    // Forward typed characters to noVNC input
+    hiddenInput.addEventListener("input", (e) => {
+        vncInput.value += e.target.value;
+        vncInput.dispatchEvent(new Event("input"));
+
+        e.target.value = "";
+    });
+
+    // Handle backspace
+    hiddenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace") {
+            vncInput.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "Backspace" })
+            );
+        }
+    });
+});
+</script>
  </body>
 </html>
