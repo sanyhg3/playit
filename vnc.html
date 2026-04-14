@@ -100,6 +100,8 @@
 </head>
 
 <body>
+<input id="mobileInput" type="text"
+style="position:absolute;opacity:0;height:0;width:0;">
 
     <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
@@ -419,5 +421,40 @@
         <source src="app/sounds/bell.oga" type="audio/ogg">
         <source src="app/sounds/bell.mp3" type="audio/mpeg">
     </audio>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("mobileInput");
+
+    // Focus input when user taps screen
+    document.addEventListener("click", () => {
+        input.focus();
+    });
+
+    // Wait until RFB is ready
+    const checkRfb = setInterval(() => {
+        if (window.rfb) {
+            clearInterval(checkRfb);
+
+            // Send typed characters
+            input.addEventListener("input", (e) => {
+                const val = e.target.value;
+
+                for (let char of val) {
+                    window.rfb.sendKey(char.charCodeAt(0));
+                }
+
+                e.target.value = "";
+            });
+
+            // Handle backspace
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace") {
+                    window.rfb.sendKey(0xff08);
+                }
+            });
+        }
+    }, 100);
+});
+</script>
  </body>
 </html>
